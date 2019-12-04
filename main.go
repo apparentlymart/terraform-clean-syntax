@@ -26,8 +26,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	start := args[0]
-	processItem(start)
+	for _, arg := range args {
+		processItem(arg)
+	}
 }
 
 func processItem(fn string) {
