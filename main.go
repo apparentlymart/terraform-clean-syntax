@@ -26,11 +26,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	start := args[0]
-	processItem(start)
+	for _, arg := range args {
+		processItem(arg)
+	}
 }
 
 func processItem(fn string) {
+	fn = filepath.Clean(fn)
+
 	info, err := os.Lstat(fn)
 	if err != nil {
 		log.Printf("Failed to stat %q: %s\n", fn, err)
@@ -38,7 +41,7 @@ func processItem(fn string) {
 	}
 
 	if info.IsDir() {
-		if strings.HasPrefix(info.Name(), ".") {
+		if info.Name() != "." && info.Name() != ".." && strings.HasPrefix(info.Name(), ".") {
 			return
 		}
 		processDir(fn)
@@ -99,7 +102,7 @@ func processFile(fn string, mode os.FileMode) {
 		log.Printf("WARNING: File %q may be left with only partial content", fn)
 		return
 	}
-	log.Printf("Made changes to %s", fn)
+	log.Printf("Made changes: %s", fn)
 }
 
 func cleanFile(f *hclwrite.File) {
