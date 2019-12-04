@@ -27,6 +27,10 @@ func main() {
 	}
 
 	for _, arg := range args {
+		if arg == "." {
+			processDir(".")
+			continue
+		}
 		processItem(arg)
 	}
 }
@@ -90,6 +94,7 @@ func processFile(fn string, mode os.FileMode) {
 	newSrc := f.Bytes()
 	if bytes.Equal(newSrc, src) {
 		// No changes
+		log.Printf("No changes required: %s", fn)
 		return
 	}
 
@@ -100,7 +105,7 @@ func processFile(fn string, mode os.FileMode) {
 		log.Printf("WARNING: File %q may be left with only partial content", fn)
 		return
 	}
-	log.Printf("Made changes to %s", fn)
+	log.Printf("Made changes: %s", fn)
 }
 
 func cleanFile(f *hclwrite.File) {
