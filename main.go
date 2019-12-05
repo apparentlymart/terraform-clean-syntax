@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -74,6 +75,12 @@ func processFile(fn string, mode os.FileMode) {
 		log.Printf("Failed to read file %q: %s", fn, err)
 		return
 	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("Recovered in processFile while processing %s: %#v\n", fn, r)
+		}
+	}()
 
 	f, diags := hclwrite.ParseConfig(src, fn, hcl.Pos{Line: 1, Column: 1})
 	if diags.HasErrors() {
