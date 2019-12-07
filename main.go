@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 
 	"github.com/hashicorp/hcl/v2"
@@ -78,7 +79,7 @@ func processFile(fn string, mode os.FileMode) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Printf("Recovered in processFile while processing %s: %#v\n", fn, r)
+			fmt.Printf("Recovered in processFile while processing %s: %#v\n%s", fn, r, debug.Stack())
 		}
 	}()
 
