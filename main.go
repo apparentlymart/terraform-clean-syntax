@@ -120,12 +120,21 @@ func cleanFile(f *hclwrite.File) {
 func cleanBody(body *hclwrite.Body, inBlocks []string) {
 	attrs := body.Attributes()
 	for name, attr := range attrs {
-		if len(inBlocks) == 1 && inBlocks[0] == "variable" && name == "type" {
-			cleanedExprTokens := cleanTypeExpr(attr.Expr().BuildTokens(nil))
-			body.SetAttributeRaw(name, cleanedExprTokens)
-			continue
+		var cleanedExprTokens hclwrite.Tokens
+		tokens := attr.Expr().BuildTokens(nil)
+		if len(inBlocks) == 1 {
+			inBlock := inBlocks[0]
+			if inBlock == "variable" && name == "type" {
+				cleanedExprTokens = cleanTypeExpr(tokens)
+				body.SetAttributeRaw(name, cleanedExprTokens)
+				continue
+			} else if (inBlock == "resource" || inBlock == "data") && name == "provider" {
+				cleanedExprTokens = cleanProviderExpr(tokens)
+				body.SetAttributeRaw(name, cleanedExprTokens)
+				continue
+			}
 		}
-		cleanedExprTokens := cleanValueExpr(attr.Expr().BuildTokens(nil))
+		cleanedExprTokens = cleanValueExpr(tokens)
 		body.SetAttributeRaw(name, cleanedExprTokens)
 	}
 
@@ -192,6 +201,27 @@ func cleanValueExpr(tokens hclwrite.Tokens) hclwrite.Tokens {
 	//    foo
 	// }"
 	return trimNewlines(inside)
+}
+
+func cleanProviderExpr(tokens hclwrite.Tokens) hclwrite.Tokens {
+	if len(tokens) != 3 {
+		// We're only interested in plain quoted strings, which consist
+		// of the open and close quotes and a literal string token.
+		return tokens
+	}
+	oQuote := tokens[0]
+	strTok := tokens[1]
+	cQuote := tokens[2]
+	if oQuote.Type != hclsyntax.TokenOQuote || strTok.Type != hclsyntax.TokenQuotedLit || cQuote.Type != hclsyntax.TokenCQuote {
+		// Not a quoted string sequence, then.
+		return tokens
+	}
+	return hclwrite.Tokens{
+		{
+			Type:  hclsyntax.TokenIdent,
+			Bytes: []byte(strTok.Bytes),
+		},
+	}
 }
 
 func cleanTypeExpr(tokens hclwrite.Tokens) hclwrite.Tokens {
