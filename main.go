@@ -216,6 +216,10 @@ func cleanProviderExpr(tokens hclwrite.Tokens) hclwrite.Tokens {
 		// Not a quoted string sequence, then.
 		return tokens
 	}
+	// HACK: Technically a provider.alias sequence ought to be three
+	// separate tokens, because the dot is an operator, but only the
+	// `Bytes` part of this is relevant to our output anyway so
+	// we'll cheat and thus avoid the need to parse `strTok.Bytes.
 	return hclwrite.Tokens{
 		{
 			Type:  hclsyntax.TokenIdent,
