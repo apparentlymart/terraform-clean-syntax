@@ -1,5 +1,7 @@
 # `terraform-clean-syntax`
 
+> **NOTE:** The changes made by this tool were integrated into Terraform's own `terraform fmt` in Terraform v0.14.0, so the functionality in this repository will see no further changes.
+
 `terraform-clean-syntax` is a simple command line tool for performing some
 small syntax cleanup steps on Terraform `.tf` configuration files
 automatically.
